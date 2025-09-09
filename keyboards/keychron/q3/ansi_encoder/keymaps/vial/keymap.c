@@ -17,6 +17,11 @@
 #include QMK_KEYBOARD_H
 #include "keychron_common.h"
 
+socd_cleaner_t socd_opposing_pairs[] = {
+  {{KC_W, KC_S}, SOCD_CLEANER_LAST},
+  {{KC_A, KC_D}, SOCD_CLEANER_LAST},
+};
+
 enum layers{
     MAC_BASE,
     MAC_FN,
