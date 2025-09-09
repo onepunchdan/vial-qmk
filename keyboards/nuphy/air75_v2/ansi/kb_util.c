@@ -397,7 +397,7 @@ void timer_pro(void) {
  * @brief  londing eeprom data.
  */
 void londing_eeprom_data(void) {
-    eeconfig_read_kb_datablock(&kb_config);
+    eeconfig_read_kb_datablock(&kb_config, 0, EECONFIG_KB_DATA_SIZE);
     if (kb_config.default_brightness_flag != 0xA5) {
         /* upon first power on, set RGB matrix brightness to middle level */
         rgb_matrix_sethsv(255, 255, RGB_MATRIX_MAXIMUM_BRIGHTNESS - RGB_MATRIX_VAL_STEP * 2);
@@ -408,7 +408,7 @@ void londing_eeprom_data(void) {
         kb_config.ee_side_rgb             = side_rgb;
         kb_config.ee_side_colour          = side_colour;
         kb_config.sleep_enable            = true;
-        eeconfig_update_kb_datablock(&kb_config);
+        eeconfig_update_kb_datablock(&kb_config, 0, EECONFIG_KB_DATA_SIZE);
     } else {
         side_mode   = kb_config.ee_side_mode;
         side_light  = kb_config.ee_side_light;

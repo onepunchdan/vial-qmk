@@ -200,7 +200,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if(kb_config.sleep_enable) kb_config.sleep_enable = false;
                 else kb_config.sleep_enable = true;
                 f_sleep_show       = 1;
-                eeconfig_update_kb_datablock(&kb_config);
+                eeconfig_update_kb_datablock(&kb_config, 0, EECONFIG_KB_DATA_SIZE);
             }
             return false;
 

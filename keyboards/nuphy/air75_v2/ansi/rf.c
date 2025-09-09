@@ -137,7 +137,7 @@ void uart_send_report_repeat(void)
     static uint32_t interval_timer = 0;
 
     if (dev_info.link_mode == LINK_USB) return;
-    keyboard_protocol          = 1;
+    // keyboard_protocol          = 1;
 
     if (timer_elapsed32(interval_timer) > 50) {
         interval_timer = timer_read32();
