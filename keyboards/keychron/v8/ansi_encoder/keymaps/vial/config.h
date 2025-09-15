@@ -6,3 +6,8 @@
 
 #define VIAL_UNLOCK_COMBO_ROWS { 0, 2 }
 #define VIAL_UNLOCK_COMBO_COLS { 0, 13 }
+
+#define TAPPING_TERM 200
+#define PERMISSIVE_HOLD
+#define QUICK_TAP_TERM 120
+#define FLOW_TAP_TERM 150

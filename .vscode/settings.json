@@ -53,5 +53,8 @@
             "fileMatch": ["keymap.json"],
             "url": "./data/schemas/keymap.jsonschema"
         }
-    ]
+    ],
+    "window.autoDetectColorScheme": true,
+    "workbench.preferredLightColorTheme": "Monospace IDX Light",
+    "workbench.preferredDarkColorTheme": "Monospace IDX Dark"
 }
