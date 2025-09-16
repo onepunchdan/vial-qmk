@@ -829,21 +829,5 @@
             "name": "TOG BAT\nIND\nNUMERIC",
             "title": "Toggle indicator numeric visual"
         },
-        {
-            "name": "SOCD\nON",
-            "title": "Turn SOCD On"
-        },
-        {
-            "name": "SOCD\nOFF",
-            "title": "Turn SOCD Off"
-        },
-        {
-            "name": "SOCD\nTOGGLE",
-            "title": "Toggle SOCD"
-        },
-        {
-            "name": "PRNT\nCFW\nVERSION",
-            "title": "Print Custom Firmware Version"
-        }
     ]
 }
