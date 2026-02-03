@@ -2,14 +2,15 @@
 
 #pragma once
 
-#define VIAL_KEYBOARD_UID {0xAF, 0x0F, 0x41, 0x84, 0x93, 0xA9, 0x2E, 0xC8}
+//Vial Keyboard UID
+#define VIAL_KEYBOARD_UID {0xE3, 0xDC, 0x82, 0x6C, 0x49, 0xEF, 0x55, 0xAF}
 
-#define VIAL_UNLOCK_COMBO_ROWS { 0, 1 }
-#define VIAL_UNLOCK_COMBO_COLS { 0, 1 }
+#define VIAL_UNLOCK_COMBO_ROWS { 0, 3 }
+#define VIAL_UNLOCK_COMBO_COLS { 0, 14 }
 
 #define TAPPING_TERM 200
 #define PERMISSIVE_HOLD
-#define HOLD_ON_OTHER_KEY_PRESS
 #define QUICK_TAP_TERM 120
+#define HOLD_ON_OTHER_KEY_PRESS
 // #define FLOW_TAP_TERM 150
 // #define CAPS_WORD_IDLE_TIMEOUT 3000
