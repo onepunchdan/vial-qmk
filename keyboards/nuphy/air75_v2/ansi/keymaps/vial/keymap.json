@@ -1,4 +1,4 @@
 
 {
-  "modules": ["getreuer/socd_cleaner", "getreuer/palettefx"]
+  "modules": ["getreuer/socd_cleaner", "getreuer/lumino", "getreuer/palettefx"]
 }
