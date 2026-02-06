@@ -30,7 +30,7 @@
             "band_spiral_val": false,
             "breathing": true,
             "cycle_all": true,
-            "cycle_left_right": false,
+            "cycle_left_right": true,
             "cycle_out_in": false,
             "cycle_out_in_dual": false,
             "cycle_pinwheel": true,
