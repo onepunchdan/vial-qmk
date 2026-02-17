@@ -36,3 +36,5 @@
 
 /* Encoder Configuration */
 #define ENCODER_DEFAULT_POS 0x3
+
+#define DYNAMIC_KEYMAP_LAYER_COUNT 6

@@ -34,3 +34,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define UART_RX_PAL_MODE                    0
 
 #define EECONFIG_KB_DATA_SIZE               10 // match used byte size of kb_config_t + 1 (seems to need extra byte)
+
+#define DYNAMIC_KEYMAP_LAYER_COUNT 6
