@@ -78,6 +78,9 @@ static uint8_t         rgb_last_enable   = UINT8_MAX;
 static uint8_t         rgb_last_effect   = UINT8_MAX;
 static effect_params_t rgb_effect_params = {0, LED_FLAG_ALL, false};
 static rgb_task_states rgb_task_state    = SYNCING;
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+static bool driver_shutdown = false;
+#endif
 
 // double buffers
 static uint32_t rgb_timer_buffer;
@@ -241,12 +244,22 @@ void rgb_matrix_test(void) {
     }
 }
 
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+__attribute__((weak)) void rgb_matrix_none_indicators_kb(void) {}
+
+__attribute__((weak)) void rgb_matrix_none_indicators_user(void) {}
+#endif
+
 static bool rgb_matrix_none(effect_params_t *params) {
     if (!params->init) {
         return false;
     }
 
     rgb_matrix_set_color_all(0, 0, 0);
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+    rgb_matrix_none_indicators_kb();
+    rgb_matrix_none_indicators_user();
+#endif
     return false;
 }
 
@@ -363,8 +376,20 @@ static void rgb_task_flush(uint8_t effect) {
     rgb_last_effect = effect;
     rgb_last_enable = rgb_matrix_config.enable;
 
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+    // exit from shutdown if necessary
+    if (driver_shutdown) {
+        rgb_matrix_driver_exit_shutdown();
+    }
+#endif
     // update pwm buffers
     rgb_matrix_update_pwm_buffers();
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+    // shutdown if necessary
+    if (effect == RGB_MATRIX_NONE && !driver_shutdown && rgb_matrix_driver_allow_shutdown()) {
+        rgb_matrix_driver_shutdown();
+    }
+#endif
 
     // next task
     rgb_task_state = SYNCING;
@@ -738,3 +763,23 @@ void rgb_matrix_set_flags(led_flags_t flags) {
 void rgb_matrix_set_flags_noeeprom(led_flags_t flags) {
     rgb_matrix_set_flags_eeprom_helper(flags, false);
 }
+
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+void rgb_matrix_driver_shutdown(void) {
+    rgb_matrix_driver.shutdown();
+    driver_shutdown = true;
+}
+
+void rgb_matrix_driver_exit_shutdown(void) {
+    rgb_matrix_driver.exit_shutdown();
+    driver_shutdown = false;
+}
+
+bool rgb_matrix_is_driver_shutdown(void) {
+    return driver_shutdown;
+}
+
+__attribute__((weak)) bool rgb_matrix_driver_allow_shutdown(void) {
+    return true;
+}
+#endif
