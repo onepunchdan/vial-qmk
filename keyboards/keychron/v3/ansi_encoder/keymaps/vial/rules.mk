@@ -3,6 +3,8 @@ VIAL_ENABLE = yes
 VIALRGB_ENABLE = yes
 ENCODER_MAP_ENABLE = yes
 CAPS_WORD_ENABLE = yes
+MOUSEKEY_ENABLE = yes
+KEY_OVERRIDE_ENABLE = no
 COMMAND_ENABLE = no
 
 VPATH += keyboards/keychron/common

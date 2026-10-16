@@ -120,6 +120,9 @@ Taken from the existing Q3/V4/Air75 v2/RK61 keymaps; replicate exactly.
 - Replaced boards (RK61, Air75 v2) take the new source's defaults (USB PID, debounce, RGB max brightness, etc.) except where the shared baseline says otherwise. The Air75 v2 PID moving from `0x3245` to `0x3246` is accepted.
 - Q1 Pro: no Keychron factory test (`ENABLE_FACTORY_TEST` off) and no CKBT51 module-firmware update over raw HID (`0xAA`). Neither handler is ported, so no `quantum/via.c` hook is needed. Updating the BT module firmware requires flashing Keychron stock firmware temporarily.
 
+- (Added during execution) Core gets one weak no-op hook, `dynamic_keymap_reset_user()`, called at the end of `dynamic_keymap_reset()`. Keymaps seed the `.vil` tap dances/combos there and call `vial_init()` to load them, because a reflash of a new build resets EEPROM through `eeconfig_init_via()` without calling `eeconfig_init_user()`.
+- (Added during execution) Key overrides are compiled out (`KEY_OVERRIDE_ENABLE = no`); tap dance/combo tier is 16/16 because 32/32 fails the EEPROM assert on the Q3.
+
 ## Known hazards (from builder check; handle in board code)
 
 - Q1 Pro `rtc_timer.c` needs LSI: set `STM32_LSI_ENABLED TRUE` in `q1_pro/mcuconf.h` (Keychron set it in core; vial-qmk core has `FALSE`). The build will not catch this.
