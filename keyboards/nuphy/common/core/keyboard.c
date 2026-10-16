@@ -1,0 +1,652 @@
+#include "quantum.h"
+#include "../config/config.h"
+#include "../debounce.h"
+#include "../indicator.h"
+#include "../timer.h"
+#include "../wireless.h"
+#include "../wireless/internal.h"
+#include "../wireless/timing.h"
+#include "mcu_pwr.h"
+#include "keys.h"
+#include "keyboard.h"
+
+__attribute((weak)) extern void side_led_show(void) {}
+__attribute((weak)) extern void rgb_test_show(void) {}
+
+#ifndef NUPHY_OS_SWITCH_HIGH_IS_WIN
+#    define NUPHY_OS_SWITCH_HIGH_IS_WIN 0
+#endif
+
+void switch_dev_link(uint8_t mode);
+void sleep_handle(void);
+
+extern bool f_wakeup_prepare;
+
+bool f_bat_hold              = 0;
+bool f_sys_show              = 0;
+bool f_sleep_show            = 0;
+bool f_dial_sw_init_ok       = 0;
+bool f_usb_sleep_show        = 0;
+bool f_deep_sleep_show       = 0;
+bool f_rf_sw_press           = 0;
+bool f_dev_reset_press       = 0;
+bool f_rgb_test_press        = 0;
+bool f_debounce_press_show   = 0;
+bool f_debounce_release_show = 0;
+bool f_sleep_timeout_show    = 0;
+
+uint8_t  rf_blink_cnt          = 0;
+uint8_t  rf_sw_temp            = 0;
+uint16_t dev_reset_press_delay = 0;
+uint16_t rf_sw_press_delay     = 0;
+uint16_t rgb_test_press_delay  = 0;
+
+extern uint32_t no_act_time;
+extern bool               f_rf_new_adv_ok;
+extern report_keyboard_t *keyboard_report;
+extern report_nkro_t     *nkro_report;
+extern host_driver_t      rf_host_driver;
+
+static void apply_os_mode(bool switch_high, bool show_indicator) {
+    uint8_t target_sys   = switch_high ? (NUPHY_OS_SWITCH_HIGH_IS_WIN ? SYS_SW_WIN : SYS_SW_MAC) : (NUPHY_OS_SWITCH_HIGH_IS_WIN ? SYS_SW_MAC : SYS_SW_WIN);
+    uint8_t target_layer = (target_sys == SYS_SW_MAC) ? 0 : 2;
+    bool    target_nkro  = (target_sys != SYS_SW_MAC);
+    nuphy_wireless_status_t status;
+
+    nuphy_wireless_get_status(&status);
+    if (status.sys_sw_state != target_sys) {
+        if (show_indicator) {
+            f_sys_show = 1;
+        }
+        default_layer_set(1 << target_layer);
+        nuphy_wireless_set_system_mode(target_sys);
+        keymap_config.nkro = target_nkro;
+        break_all_key();
+    }
+}
+
+/**
+ * @brief  long press key process.
+ */
+void long_press_key(void) {
+    static uint32_t long_press_timer = 0;
+
+    if (timer_elapsed32(long_press_timer) < 100) return;
+    long_press_timer = timer_read32();
+
+    // Open a new RF device
+    if (f_rf_sw_press) {
+#if (WORK_MODE == THREE_MODE)
+        rf_sw_press_delay++;
+        if (rf_sw_press_delay >= RF_LONG_PRESS_DELAY) {
+            f_rf_sw_press = 0;
+
+            nuphy_wireless_set_active_link(rf_sw_temp);
+            nuphy_rf_request_new_adv(5);
+        }
+#endif
+    } else {
+        rf_sw_press_delay = 0;
+    }
+
+    // The device is restored to factory Settings
+    if (f_dev_reset_press) {
+        dev_reset_press_delay++;
+        if (dev_reset_press_delay >= DEV_RESET_PRESS_DELAY) {
+            f_dev_reset_press = 0;
+
+            nuphy_wireless_status_t status;
+            nuphy_wireless_get_status(&status);
+
+            if (status.link_mode != LINK_USB) {
+                if (status.link_mode != LINK_RF_24) {
+                    nuphy_wireless_set_active_link(LINK_BT_1);
+                }
+            } else {
+                nuphy_wireless_set_active_link(LINK_BT_1);
+                nuphy_wireless_set_active_link(LINK_USB);
+            }
+
+            nuphy_wireless_get_status(&status);
+            nuphy_rf_set_link(status.link_mode, 10, 10);
+            wait_ms(500);
+            nuphy_rf_factory_reset();
+
+            void device_reset_show(void);
+            void device_reset_init(void);
+
+            eeconfig_init();
+            device_reset_show();
+            device_reset_init();
+
+            nuphy_wireless_get_status(&status);
+            if (status.sys_sw_state == SYS_SW_MAC) {
+                default_layer_set(1 << 0);
+                keymap_config.nkro = 0;
+            } else {
+                default_layer_set(1 << 2);
+                keymap_config.nkro = 1;
+            }
+        }
+    } else {
+        dev_reset_press_delay = 0;
+    }
+
+    // Enter the RGB test mode
+    if (f_rgb_test_press) {
+        rgb_test_press_delay++;
+        if (rgb_test_press_delay >= RGB_TEST_PRESS_DELAY) {
+            f_rgb_test_press = 0;
+            rgb_test_show();
+        }
+    } else {
+        rgb_test_press_delay = 0;
+    }
+}
+
+/**
+ * @brief  scan dial switch.
+ */
+void dial_sw_scan(void) {
+    uint8_t         dial_scan       = 0;
+    static uint8_t  dial_save       = 0xf0;
+    static uint8_t  debounce        = 0;
+    static uint32_t dial_scan_timer = 0;
+    static bool     f_first         = true;
+
+    if (!f_first) {
+        if (timer_elapsed32(dial_scan_timer) < 20) return;
+    }
+    dial_scan_timer = timer_read32();
+
+#if (WORK_MODE == THREE_MODE)
+    gpio_set_pin_input_high(DEVICE_MODE_PIN);
+#endif
+    gpio_set_pin_input_high(OS_MODE_PIN);
+#if (WORK_MODE == THREE_MODE)
+    if (gpio_read_pin(DEVICE_MODE_PIN)) dial_scan |= 0X01;
+#endif
+    if (gpio_read_pin(OS_MODE_PIN)) dial_scan |= 0X02;
+
+    if (dial_save != dial_scan) {
+        break_all_key();
+
+        no_act_time       = 0;
+        rf_linking_time   = 0;
+        dial_save         = dial_scan;
+        debounce          = 25;
+        f_dial_sw_init_ok = 0;
+        return;
+    } else if (debounce) {
+        debounce--;
+        return;
+    }
+
+#if (WORK_MODE == THREE_MODE)
+    nuphy_wireless_status_t status;
+    nuphy_wireless_get_status(&status);
+    if (dial_scan & 0x01) {
+        if (status.link_mode != LINK_USB) {
+            switch_dev_link(LINK_USB);
+        }
+    } else {
+        nuphy_wireless_switch_to_saved_link();
+    }
+#endif
+
+    apply_os_mode((dial_scan & 0x02) != 0, true);
+
+    if (f_dial_sw_init_ok == 0) {
+        f_dial_sw_init_ok = 1;
+        f_first           = false;
+
+#if (WORK_MODE == THREE_MODE)
+        nuphy_wireless_get_status(&status);
+        if (status.link_mode != LINK_USB) {
+            host_set_driver(&rf_host_driver);
+        }
+#endif
+    }
+}
+
+/**
+ * @brief  power on scan dial switch.
+ */
+void dial_sw_fast_scan(void) {
+    uint8_t dial_scan_dev  = 0;
+    uint8_t dial_scan_sys  = 0;
+    uint8_t dial_check_dev = 0;
+    uint8_t dial_check_sys = 0;
+    uint8_t debounce       = 0;
+#if (WORK_MODE == THREE_MODE)
+    gpio_set_pin_input_high(DEVICE_MODE_PIN);
+#endif
+    gpio_set_pin_input_high(OS_MODE_PIN);
+
+    // Debounce to get a stable state
+    for (debounce = 0; debounce < 10; debounce++) {
+        dial_scan_dev = 0;
+        dial_scan_sys = 0;
+#if (WORK_MODE == THREE_MODE)
+        if (gpio_read_pin(DEVICE_MODE_PIN))
+            dial_scan_dev = 0x01;
+        else
+            dial_scan_dev = 0;
+#endif
+        if (gpio_read_pin(OS_MODE_PIN))
+            dial_scan_sys = 0x01;
+        else
+            dial_scan_sys = 0;
+        if ((dial_scan_dev != dial_check_dev) || (dial_scan_sys != dial_check_sys)) {
+            dial_check_dev = dial_scan_dev;
+            dial_check_sys = dial_scan_sys;
+            debounce       = 0;
+        }
+        wait_ms(1);
+    }
+
+#if (WORK_MODE == THREE_MODE)
+    // RF link mode
+    nuphy_wireless_status_t status;
+    nuphy_wireless_get_status(&status);
+    if (dial_scan_dev) {
+        if (status.link_mode != LINK_USB) {
+            switch_dev_link(LINK_USB);
+        }
+    } else {
+        nuphy_wireless_switch_to_saved_link();
+    }
+#endif
+    // Win or Mac
+    apply_os_mode(dial_scan_sys != 0, false);
+}
+
+/**
+ * @brief User config to default setting.
+ */
+void kb_config_reset(void) {
+    rgb_matrix_enable();
+    rgb_matrix_mode(RGB_MATRIX_DEFAULT_MODE);
+    rgb_matrix_set_speed(255 - RGB_MATRIX_SPD_STEP * 2);
+    rgb_matrix_sethsv(RGB_DEFAULT_COLOR, RGB_MATRIX_DEFAULT_SAT, DEFAULT_RGB_MATRIX_BRIGHTNESS);
+
+    init_keyboard_config();
+    keyboard_config.been_initiated = NUPHY_CONFIG_INIT_MAGIC;
+
+    save_config_to_eeprom();
+}
+
+void load_eeprom_data(void) {
+    load_config_from_eeprom();
+
+    if (keyboard_config.been_initiated != NUPHY_CONFIG_INIT_MAGIC) {
+        kb_config_reset();
+        return;
+    }
+}
+
+/* qmk housekeeping task */
+void housekeeping_task_nuphy(void) {
+    timer_pro();
+
+#if (WORK_MODE == THREE_MODE)
+    nuphy_rf_poll();
+    nuphy_rf_repeat_reports();
+    nuphy_rf_sync_status();
+#endif
+
+    long_press_key();
+
+    dial_sw_scan();
+    // external from each keyboard
+    side_led_show();
+
+    sleep_handle();
+}
+
+extern void gpio_init(void);
+
+void keyboard_post_init_nuphy(void) {
+    gpio_init();
+
+#if (WORK_MODE == THREE_MODE)
+    nuphy_rf_transport_init();
+    wait_ms(500);
+    nuphy_rf_device_init();
+#endif
+    break_all_key();
+    dial_sw_fast_scan();
+    load_eeprom_data();
+    keyboard_post_init_user();
+}
+
+#ifdef RGB_MATRIX_SLEEP
+void suspend_power_down_kb(void) {
+    rgb_matrix_set_suspend_state(true);
+    suspend_power_down_user();
+}
+
+void suspend_wakeup_init_kb(void) {
+    if (f_wakeup_prepare) {
+        f_wakeup_prepare = false;
+        exit_light_sleep();
+        no_act_time = 0;
+    }
+
+    rgb_matrix_set_suspend_state(false);
+    suspend_wakeup_init_user();
+}
+#endif
+
+/**
+
+ * @brief  show sleep indicator
+ */
+void sleep_indicator_show(void) {
+    static uint32_t sleep_show_timer     = 0;
+    static bool     sleep_show_flag      = false;
+    static bool     usb_sleep_show_flag  = false;
+    static bool     deep_sleep_show_flag = false;
+
+    uint8_t r_temp, g_temp, b_temp;
+
+    if (f_sleep_show) {
+        f_sleep_show = false;
+
+        sleep_show_timer     = timer_read32();
+        sleep_show_flag      = true;
+        usb_sleep_show_flag  = false;
+        deep_sleep_show_flag = false;
+    } else if (f_usb_sleep_show) {
+        f_usb_sleep_show     = false;
+        sleep_show_timer     = timer_read32();
+        usb_sleep_show_flag  = true;
+        sleep_show_flag      = false;
+        deep_sleep_show_flag = false;
+    } else if (f_deep_sleep_show) {
+        f_deep_sleep_show    = false;
+        sleep_show_timer     = timer_read32();
+        usb_sleep_show_flag  = false;
+        sleep_show_flag      = false;
+        deep_sleep_show_flag = true;
+    }
+
+    if (sleep_show_flag) {
+        if (keyboard_config.common.sleep_toggle) {
+            r_temp = 0x00;
+            g_temp = 0x80;
+            b_temp = 0x00;
+        } else {
+            r_temp = 0x80;
+            g_temp = 0x00;
+            b_temp = 0x00;
+        }
+        if ((timer_elapsed32(sleep_show_timer) / 500) % 2 == 0) {
+            set_indicator_on_side(r_temp, g_temp, b_temp);
+        } else {
+            set_indicator_on_side(0x00, 0x00, 0x00);
+        }
+        if (timer_elapsed32(sleep_show_timer) >= (3000 - 50)) {
+            sleep_show_flag = false;
+        }
+    } else if (usb_sleep_show_flag) {
+        if (keyboard_config.common.usb_sleep_toggle) {
+            r_temp = 0x00;
+            g_temp = 0x80;
+            b_temp = 0x00;
+        } else {
+            r_temp = 0x80;
+            g_temp = 0x00;
+            b_temp = 0x00;
+        }
+        if ((timer_elapsed32(sleep_show_timer) / 500) % 2 == 0) {
+            set_indicator_on_side(r_temp, g_temp, b_temp);
+        } else {
+            set_indicator_on_side(0x00, 0x00, 0x00);
+        }
+        if (timer_elapsed32(sleep_show_timer) >= (3000 - 50)) {
+            usb_sleep_show_flag = false;
+        }
+    } else if (deep_sleep_show_flag) {
+        if (keyboard_config.common.deep_sleep_toggle) {
+            r_temp = 0x00;
+            g_temp = 0x80;
+            b_temp = 0x00;
+        } else {
+            r_temp = 0x80;
+            g_temp = 0x00;
+            b_temp = 0x00;
+        }
+        if ((timer_elapsed32(sleep_show_timer) / 500) % 2 == 0) {
+            set_indicator_on_side(r_temp, g_temp, b_temp);
+        } else {
+            set_indicator_on_side(0x00, 0x00, 0x00);
+        }
+        if (timer_elapsed32(sleep_show_timer) >= (3000 - 50)) {
+            deep_sleep_show_flag = false;
+        }
+    }
+}
+
+__attribute__((weak)) void os_mode_led_show(void) {
+    static uint32_t sys_show_timer = 0;
+    static bool     sys_show_flag  = false;
+    extern bool     f_sys_show;
+    uint8_t                  r_temp, g_temp, b_temp;
+    nuphy_wireless_status_t status;
+
+    if (f_sys_show) {
+        f_sys_show     = false;
+        sys_show_timer = timer_read32();
+
+        sys_show_flag = true;
+    }
+
+    if (sys_show_flag) {
+        nuphy_wireless_get_status(&status);
+        if (status.sys_sw_state == SYS_SW_MAC) {
+            r_temp = 0x80;
+            g_temp = 0x80;
+
+            b_temp = 0x80;
+        } else {
+            r_temp = 0x00;
+            g_temp = 0x00;
+            b_temp = 0x80;
+        }
+        if ((timer_elapsed32(sys_show_timer) / 500) % 2 == 0) {
+            set_indicator_on_side(r_temp, g_temp, b_temp);
+        } else {
+            set_indicator_on_side(0x00, 0x00, 0x00);
+        }
+        if (timer_elapsed32(sys_show_timer) >= (3000 - 50)) {
+#if (WORK_MODE == USB_MODE)
+            if (timer_elapsed32(sys_show_timer) <= 4000)
+                set_side_rgb(r_temp, g_temp, b_temp);
+            else
+                sys_show_flag = false;
+
+#else
+            sys_show_flag = false;
+#endif
+        }
+    }
+}
+
+uint8_t r_temp = 0x00, g_temp = 0x00, b_temp = 0x00;
+
+void rf_show_blink(void) {
+    extern uint8_t  rf_blink_cnt;
+    static uint32_t interval_timer = 0;
+    uint16_t                 show_period;
+    nuphy_wireless_status_t status;
+
+    if (rf_blink_cnt) {
+        nuphy_wireless_get_status(&status);
+        if (status.rf_state == NUPHY_WIRELESS_STATE_PAIRING)
+            show_period = 250;
+
+        else
+            show_period = 500;
+
+        if (timer_elapsed32(interval_timer) > (show_period >> 1)) {
+            r_temp = 0x00;
+            g_temp = 0x00;
+            b_temp = 0x00;
+        }
+
+        if (timer_elapsed32(interval_timer) >= show_period) {
+            rf_blink_cnt--;
+            interval_timer = timer_read32();
+        }
+    } else {
+        interval_timer = timer_read32();
+    }
+
+    set_indicator_on_side(r_temp, g_temp, b_temp);
+}
+
+/**
+ * @brief  rf_led_show.
+ */
+void wireless_mode_show(void) {
+#if (WORK_MODE == THREE_MODE)
+    static bool flag_power_on = 1;
+#endif
+    nuphy_wireless_status_t status;
+
+    nuphy_wireless_get_status(&status);
+    if (status.link_mode == LINK_RF_24) {
+        r_temp = 0x00;
+        g_temp = 0x80;
+        b_temp = 0x00;
+
+    } else if (status.link_mode == LINK_USB) {
+        r_temp = 0x80;
+        g_temp = 0x80;
+        b_temp = 0x00;
+#if (WORK_MODE == THREE_MODE)
+        if (flag_power_on && !nuphy_wireless_link_show_time_elapsed()) return;
+#endif
+    } else {
+        r_temp = 0x00;
+        g_temp = 0x00;
+        b_temp = 0x80;
+    }
+
+#if (WORK_MODE == THREE_MODE)
+    flag_power_on = 0;
+#endif
+    if (rf_blink_cnt) {
+        rf_show_blink();
+    } else if (!nuphy_wireless_link_show_time_elapsed()) {
+        set_indicator_on_side(r_temp, g_temp, b_temp);
+    }
+}
+
+bool rgb_matrix_indicators_nuphy(void) {
+#ifdef WS2812_SIDE_REFRESH
+    static uint32_t side_refresh_time = 0;
+#endif
+    uint8_t                  caps_key_led_idx = get_led_index(3, 0);
+    bool                     showCapsLock     = false;
+    nuphy_wireless_status_t status;
+
+    nuphy_wireless_get_status(&status);
+    if (status.link_mode == LINK_USB) {
+        showCapsLock = host_keyboard_led_state().caps_lock;
+    } else {
+        showCapsLock = status.rf_led & 0x02;
+    }
+
+    if (nuphy_should_render_wireless_profile_indicator(status.link_mode, rf_blink_cnt)) {
+        uint8_t r = 0, g = 0x80, b = 0;
+
+        uint8_t col = 4;
+        if (status.link_mode >= LINK_BT_1 && status.link_mode <= LINK_BT_3) {
+            col = status.link_mode;
+            g   = 0;
+            b   = 0x80; // blue for BT
+        } else if (status.link_mode == LINK_RF_24) {
+            col = 4;
+            g   = 0x80;
+            b   = 0; // green for RF
+        }
+        user_set_rgb_color(get_led_index(1, col), r, g, b);
+    }
+
+    if (showCapsLock) {
+        switch (keyboard_config.common.caps_indicator_type) {
+            case CAPS_INDICATOR_SIDE:
+                set_indicator_on_side(0X00, 0x80, 0x80);
+
+                break;
+            case CAPS_INDICATOR_UNDER_KEY:
+                user_set_rgb_color(caps_key_led_idx, 0, 0x80, 0x80);
+
+                break;
+            case CAPS_INDICATOR_BOTH:
+                set_indicator_on_side(0X00, 0x80, 0x80);
+                user_set_rgb_color(caps_key_led_idx, 0, 0x80, 0x80);
+
+                break;
+            case CAPS_INDICATOR_OFF:
+            default:
+                break;
+        }
+    }
+
+    if (keymap_config.no_gui) {
+        // fixed position in top right corner, key position in matrix is (0,16), led index is (16)
+        rgb_matrix_set_color(get_led_index(WIN_LOCK_ROW, WIN_LOCK_COL), 0x00, 0x80, 0x00);
+    }
+
+    if (f_debounce_press_show) { // green numbers - press debounce
+        rgb_matrix_set_color(two_digit_decimals_led(keyboard_config.common.debounce_press_ms), 0x00, 0x80, 0x00);
+        rgb_matrix_set_color(two_digit_ones_led(keyboard_config.common.debounce_press_ms), 0x00, 0x80, 0x00);
+    }
+    if (f_debounce_release_show) { // red numbers - release deboucne
+        rgb_matrix_set_color(two_digit_decimals_led(keyboard_config.common.debounce_release_ms), 0x80, 0x00, 0x00);
+        rgb_matrix_set_color(two_digit_ones_led(keyboard_config.common.debounce_release_ms), 0x80, 0x00, 0x00);
+    }
+
+    if (f_sleep_timeout_show) { // cyan numbers - sleep timeout
+        rgb_matrix_set_color(two_digit_decimals_led(keyboard_config.common.sleep_timeout), 0x00, 0x80, 0x80);
+        rgb_matrix_set_color(two_digit_ones_led(keyboard_config.common.sleep_timeout), 0x00, 0x80, 0x80);
+    }
+
+    if (keyboard_config.custom.detect_numlock_state) {
+        uint8_t showNumLock = 0;
+        if (status.link_mode != LINK_USB) {
+            showNumLock = status.rf_led & 0x01;
+        } else {
+            showNumLock = host_keyboard_led_state().num_lock;
+        }
+
+        if (showNumLock) {
+            rgb_matrix_set_color(get_led_index(NUM_LOCK_ROW, NUM_LOCK_COL), 0x00, 0x80, 0x00);
+        }
+    }
+
+    os_mode_led_show();
+
+    if (f_bat_hold && keyboard_config.custom.battery_indicator_numeric) {
+        rgb_matrix_set_color(two_digit_decimals_led(status.rf_battery), 0x00, 0x80, 0x80);
+        rgb_matrix_set_color(two_digit_ones_led(status.rf_battery), 0x00, 0x80, 0x80);
+    }
+
+    sleep_indicator_show();
+
+#if (WORK_MODE == THREE_MODE)
+    wireless_mode_show();
+#endif
+
+#ifdef WS2812_SIDE_REFRESH
+    if (timer_elapsed32(side_refresh_time) > 50) {
+        side_refresh_time = timer_read32();
+        side_rgb_refresh();
+    }
+#endif
+
+    return true;
+}
