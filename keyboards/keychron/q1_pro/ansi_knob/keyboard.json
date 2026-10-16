@@ -1,4 +1,7 @@
 {
+    "dynamic_keymap": {
+        "layer_count": 6
+    },
     "usb": {
         "pid": "0x0610",
         "device_version": "1.0.0"
