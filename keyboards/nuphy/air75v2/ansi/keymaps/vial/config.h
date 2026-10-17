@@ -26,4 +26,5 @@
 #define RGB_MATRIX_SOLID_REACTIVE_GRADIENT_MODE
 
 #define VIAL_TAP_DANCE_ENTRIES 16
-#define VIAL_COMBO_ENTRIES 16
+#define VIAL_COMBO_ENTRIES 8  // Air75 only: frees RAM on the 16 KB F072
+#define NO_ALT_REPEAT_KEY      // Air75 only: drops Vial alt-repeat table to free RAM
