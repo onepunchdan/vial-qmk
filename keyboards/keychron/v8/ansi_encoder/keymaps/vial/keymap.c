@@ -17,6 +17,9 @@
 #include QMK_KEYBOARD_H
 #include "keychron_common.h"
 #include "vil_defaults.h"
+#ifdef QMK_SETTINGS
+#    include "qmk_settings.h"
+#endif
 
 socd_cleaner_t socd_opposing_pairs[] = {
   {{KC_W, KC_S}, SOCD_CLEANER_LAST},
@@ -52,6 +55,14 @@ void dynamic_keymap_reset_user(void) {
     static const vial_combo_entry_t combos[] = VIL_COMBOS;
     for (uint8_t i = 0; i < VIL_COMBO_COUNT && i < VIAL_COMBO_ENTRIES; ++i) {
         dynamic_keymap_set_combo(i, &combos[i]);
+    }
+#endif
+#ifdef QMK_SETTINGS
+    // dynamic_keymap_reset() just reset QMK Settings to defaults; seed the .vil values (a 4-byte buffer fits every setting width).
+    static const uint16_t qs[][2] = VIL_QMK_SETTINGS;
+    for (uint8_t i = 0; i < VIL_QMK_SETTINGS_COUNT; ++i) {
+        uint32_t v = qs[i][1];
+        qmk_settings_set(qs[i][0], &v, sizeof(v));
     }
 #endif
 #ifdef VIAL_ENABLE

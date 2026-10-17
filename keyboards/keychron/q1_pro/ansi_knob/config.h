@@ -36,8 +36,7 @@
 /* Allow shutdown of led driver to save power */
 #    define RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
 #    define RGB_MATRIX_DRIVER_LOAD_ENABLE
-/* Turn off backlight on low brightness to save power */
-#    define RGB_MATRIX_BRIGHTNESS_TURN_OFF_VAL 32
+/* Keychron's turn-off-at-low-brightness core feature (RGB_MATRIX_BRIGHTNESS_TURN_OFF_VAL) is not ported. */
 
 #    define CAPS_LOCK_INDEX 45
 #    define LOW_BAT_IND_INDEX 75

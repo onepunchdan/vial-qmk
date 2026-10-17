@@ -62,7 +62,7 @@ class TestVilTool(unittest.TestCase):
         h = vt.vil_to_header(vil, {})
         bodies = re.findall(r"#define (VIL_\w+) \\\n(.*?)\n\n", h, re.S)
         self.assertEqual([b[0] for b in bodies],
-                         ["VIL_KEYMAPS", "VIL_ENCODER_MAP", "VIL_TAP_DANCE", "VIL_COMBOS"])
+                         ["VIL_KEYMAPS", "VIL_ENCODER_MAP", "VIL_TAP_DANCE", "VIL_COMBOS", "VIL_QMK_SETTINGS"])
         for name, body in bodies:
             self.assertTrue(body.startswith("{") and body.endswith("}"), name)
 
@@ -98,6 +98,22 @@ class TestVilTool(unittest.TestCase):
         missing = sorted(i for i in idents
                          if not re.search(r"\b%s\b" % re.escape(i), text))
         self.assertEqual(missing, [])
+
+    def test_qmk_settings_macro(self):
+        vil = {"layout": [[["KC_A"]]], "settings": {"27": 150, "2": 50, "7": 200}}
+        h = vt.vil_to_header(vil, {})
+        self.assertIn("#define VIL_QMK_SETTINGS \\\n{ \\\n    {2, 50}, \\\n    {7, 200}, \\\n    {27, 150}, \\\n}\n", h)
+        self.assertIn("#define VIL_QMK_SETTINGS_COUNT 3", h)
+
+    def test_qmk_settings_absent(self):
+        h = vt.vil_to_header({"layout": [[["KC_A"]]]}, {})
+        self.assertIn("#define VIL_QMK_SETTINGS_COUNT 0", h)
+
+    def test_q3_header_has_settings(self):
+        with open(Q3_VIL) as f:
+            h = vt.vil_to_header(json.load(f), {})
+        m = re.search(r"VIL_QMK_SETTINGS_COUNT (\d+)", h)
+        self.assertTrue(m and int(m.group(1)) > 0)
 
     def test_vialjson_skips_odd_legend(self):
         kle = {"layouts": {"keymap": [["abc", "0,0"]]}}

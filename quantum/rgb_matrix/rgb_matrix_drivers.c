@@ -21,6 +21,10 @@
 #include "color.h"
 #include "util.h"
 
+#if (defined(RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE) || defined(RGB_MATRIX_DRIVER_LOAD_ENABLE)) && !defined(RGB_MATRIX_SNLED27351)
+#    error "RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE / RGB_MATRIX_DRIVER_LOAD_ENABLE are only implemented for the SNLED27351 driver"
+#endif
+
 /* Each driver needs to define the struct
  *    const rgb_matrix_driver_t rgb_matrix_driver;
  * All members must be provided.

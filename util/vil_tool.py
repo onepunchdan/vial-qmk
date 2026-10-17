@@ -103,6 +103,10 @@ def vil_to_header(vil, renames, source="<vil>", layout_macro=None, keyboard=None
     cb = _trim(cb, 5)
     macro("VIL_COMBOS", ["    {{%s}, %s}," % (", ".join(e[:4]), e[4]) for e in cb])
     out += ["#define VIL_COMBO_COUNT %d" % len(cb), ""]
+
+    qs = sorted((int(k), v) for k, v in vil.get("settings", {}).items())
+    macro("VIL_QMK_SETTINGS", ["    {%d, %d}," % e for e in qs])
+    out += ["#define VIL_QMK_SETTINGS_COUNT %d" % len(qs), ""]
     return "\n".join(out)
 
 
