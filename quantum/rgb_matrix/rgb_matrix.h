@@ -219,6 +219,14 @@ led_flags_t rgb_matrix_get_flags(void);
 void        rgb_matrix_set_flags(led_flags_t flags);
 void        rgb_matrix_set_flags_noeeprom(led_flags_t flags);
 void        rgb_matrix_update_pwm_buffers(void);
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+void rgb_matrix_driver_shutdown(void);
+void rgb_matrix_driver_exit_shutdown(void);
+bool rgb_matrix_is_driver_shutdown(void);
+bool rgb_matrix_driver_allow_shutdown(void);
+void rgb_matrix_none_indicators_kb(void);
+void rgb_matrix_none_indicators_user(void);
+#endif
 
 #ifndef RGBLIGHT_ENABLE
 #    define eeconfig_update_rgblight_current eeconfig_force_flush_rgb_matrix

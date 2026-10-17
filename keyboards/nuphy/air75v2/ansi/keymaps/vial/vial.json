@@ -1,0 +1,370 @@
+{
+  "name": "NuPhy Air75 V2",
+  "vendorId": "0x19F5",
+  "productId": "0x3246",
+  "lighting": "vialrgb",
+  "matrix": {
+    "rows": 6,
+    "cols": 17
+  },
+  "customKeycodes": [
+    {
+      "name": "RF DFU",
+      "title": "RF DFU",
+      "shortName": "RF\nDFU"
+    },
+    {
+      "name": "Link USB",
+      "title": "Link USB",
+      "shortName": "Link\nUSB"
+    },
+    {
+      "name": "Link RF",
+      "title": "Link RF",
+      "shortName": "Link\nRF"
+    },
+    {
+      "name": "Link BLE_1",
+      "title": "Link BLE_1",
+      "shortName": "Link\nBLE_1"
+    },
+    {
+      "name": "Link BLE_2",
+      "title": "Link BLE_2",
+      "shortName": "Link\nBLE_2"
+    },
+    {
+      "name": "Link BLE_3",
+      "title": "Link BLE_3",
+      "shortName": "Link\nBLE_3"
+    },
+    {
+      "name": "Mac Task",
+      "title": "Mac Task",
+      "shortName": "Mac\nTask"
+    },
+    {
+      "name": "Mac Search",
+      "title": "Mac Search",
+      "shortName": "Mac\nSearch"
+    },
+    {
+      "name": "Mac Siri Voice",
+      "title": "Mac Siri Voice",
+      "shortName": "Mac\nVoice"
+    },
+    {
+      "name": "Mac Console",
+      "title": "Mac Console",
+      "shortName": "Mac\nConsole"
+    },
+    {
+      "name": "Mac DND",
+      "title": "Mac DND",
+      "shortName": "Mac\nDND"
+    },
+    {
+      "name": "Win lock",
+      "title": "Win lock",
+      "shortName": "Win\nlock"
+    },
+    {
+      "name": "Device Reset",
+      "title": "Device Reset",
+      "shortName": "Dev\nReset"
+    },
+    {
+      "name": "Auto Sleep",
+      "title": "Auto Sleep",
+      "shortName": "Sleep\nMode"
+    },
+    {
+      "name": "Battery Show",
+      "title": "Battery Show",
+      "shortName": "Bat\nShow"
+    },
+    {
+      "name": "Hold for 3 seconds for RGB color test",
+      "title": "Hold for 3 seconds for RGB color test",
+      "shortName": "RGB\nTest"
+    },
+    {
+      "name": "SHIFT+` = ~",
+      "title": "SHIFT+` = ~",
+      "shortName": "Tilde"
+    },
+    {
+      "name": "Side Light +",
+      "title": "Side Light +",
+      "shortName": "Side\nLight+"
+    },
+    {
+      "name": "Side Light -",
+      "title": "Side Light -",
+      "shortName": "Side\nLight-"
+    },
+    {
+      "name": "Side Next Mode",
+      "title": "Side Next Mode",
+      "shortName": "Side\nMode"
+    },
+    {
+      "name": "Side Next Color",
+      "title": "Side Next Color",
+      "shortName": "Side\nColor"
+    },
+    {
+      "name": "Side Speed +",
+      "title": "Side Speed +",
+      "shortName": "Side\nFast"
+    },
+    {
+      "name": "Side Speed -",
+      "title": "Side Speed -",
+      "shortName": "Side\nSlow"
+    },
+    {
+      "name": "Ambient Light +",
+      "title": "Ambient Light +",
+      "shortName": "Ambient\nLight+"
+    },
+    {
+      "name": "Ambient Light -",
+      "title": "Ambient Light -",
+      "shortName": "Ambient\nLight-"
+    },
+    {
+      "name": "Ambient Next Mode",
+      "title": "Ambient Next Mode",
+      "shortName": "Ambient\nMode"
+    },
+    {
+      "name": "Ambient Next Color",
+      "title": "Ambient Next Color",
+      "shortName": "Ambient\nColor"
+    },
+    {
+      "name": "Ambient Speed +",
+      "title": "Ambient Speed +",
+      "shortName": "Ambient\nFast"
+    },
+    {
+      "name": "Ambient Speed -",
+      "title": "Ambient Speed -",
+      "shortName": "Ambient\nSlow"
+    },
+    {
+      "name": "Toggle USB Sleep",
+      "title": "Toggle USB Sleep",
+      "shortName": "TOG USB\nSleep"
+    },
+    {
+      "name": "Toggle Caps Lock Indicator",
+      "title": "Toggle Caps Lock Indicator",
+      "shortName": "TOG CAPS\nINDICATOR"
+    },
+    {
+      "name": "Increase Press Debounce",
+      "title": "Increase Press Debounce",
+      "shortName": "DEBOUNCE\nPRESS\nINCREASE"
+    },
+    {
+      "name": "Decrease Press Debounce",
+      "title": "Decrease Press Debounce",
+      "shortName": "DEBOUNCE\nPRESS\nDECREASE"
+    },
+    {
+      "name": "Show Press Debounce Value",
+      "title": "Show Press Debounce Value",
+      "shortName": "DEBOUNCE\nPRESS\nSHOW"
+    },
+    {
+      "name": "Increase Sleep Timeout",
+      "title": "Increase Sleep Timeout",
+      "shortName": "SLP TIME\nINCREASE"
+    },
+    {
+      "name": "Decrease Sleep Timeout",
+      "title": "Decrease Sleep Timeout",
+      "shortName": "SLP TIME\nDECREASE"
+    },
+    {
+      "name": "Show Sleep Timeout Value",
+      "title": "Show Sleep Timeout Value",
+      "shortName": "SLP TIME\nSHOW VAL"
+    },
+    {
+      "name": "Mac Globe",
+      "title": "Mac Globe",
+      "shortName": "Mac\nGlobe"
+    },
+    {
+      "name": "Increase Release Debounce",
+      "title": "Increase Release Debounce",
+      "shortName": "DEBOUNCE\nRELEASE\nINCREASE"
+    },
+    {
+      "name": "Decrease Release Debounce",
+      "title": "Decrease Release Debounce",
+      "shortName": "DEBOUNCE\nRELEASE\nDECREASE"
+    },
+    {
+      "name": "Show Release Debounce Value",
+      "title": "Show Release Debounce Value",
+      "shortName": "DEBOUNCE\nRELEASE\nSHOW"
+    },
+    {
+      "name": "Toggle Deep Sleep",
+      "title": "Toggle Deep Sleep",
+      "shortName": "TOG DEEP\nSLEEP"
+    },
+    {
+      "name": "Toggle indicator numeric visual",
+      "title": "Toggle indicator numeric visual",
+      "shortName": "TOG BAT\nIND\nNUMERIC"
+    },
+    {
+      "name": "Print Custom Firmware Version",
+      "title": "Print Custom Firmware Version",
+      "shortName": "PRNT\nCFW\nVERSION"
+    },
+    {
+      "name": "Toggle Power On Animation",
+      "title": "Toggle Power On Animation",
+      "shortName": "Pwr On\nAnim"
+    }
+  ],
+  "layouts": {
+    "keymap": [
+      [
+        "0,0",
+        "0,1",
+        "0,2",
+        "0,3",
+        "0,4",
+        "0,5",
+        "0,6",
+        "0,7",
+        "0,8",
+        "0,9",
+        "0,10",
+        "0,11",
+        "0,12",
+        "2,14",
+        "0,15",
+        "0,14"
+      ],
+      [
+        "1,0",
+        "1,1",
+        "1,2",
+        "1,3",
+        "1,4",
+        "1,5",
+        "1,6",
+        "1,7",
+        "1,8",
+        "1,9",
+        "1,10",
+        "1,11",
+        "1,12",
+        {
+          "w": 2
+        },
+        "1,13",
+        "1,16"
+      ],
+      [
+        {
+          "w": 1.5
+        },
+        "2,0",
+        "2,1",
+        "2,2",
+        "2,3",
+        "2,4",
+        "2,5",
+        "2,6",
+        "2,7",
+        "2,8",
+        "2,9",
+        "2,10",
+        "2,11",
+        "2,12",
+        {
+          "w": 1.5
+        },
+        "2,13",
+        "2,16"
+      ],
+      [
+        {
+          "w": 1.75
+        },
+        "3,0",
+        "3,1",
+        "3,2",
+        "3,3",
+        "3,4",
+        "3,5",
+        "3,6",
+        "3,7",
+        "3,8",
+        "3,9",
+        "3,10",
+        "3,11",
+        {
+          "w": 2.25
+        },
+        "3,13",
+        "1,15"
+      ],
+      [
+        {
+          "w": 2.25
+        },
+        "4,0",
+        "4,2",
+        "4,3",
+        "4,4",
+        "4,5",
+        "4,6",
+        "4,7",
+        "4,8",
+        "4,9",
+        "4,10",
+        "4,11",
+        {
+          "w": 1.75
+        },
+        "4,13",
+        "4,14",
+        "2,15"
+      ],
+      [
+        {
+          "w": 1.25
+        },
+        "5,0",
+        {
+          "w": 1.25
+        },
+        "5,1",
+        {
+          "w": 1.25
+        },
+        "5,2",
+        {
+          "w": 6.25
+        },
+        "5,6",
+        "5,9",
+        "5,10",
+        "3,14",
+        "5,13",
+        "5,14",
+        "5,15"
+      ]
+    ]
+  }
+}

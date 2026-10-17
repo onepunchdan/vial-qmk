@@ -221,6 +221,19 @@ void snled27351_set_led_control_register(uint8_t index, bool red, bool green, bo
     driver_buffers[led.driver].led_control_buffer_dirty = true;
 }
 
+// Gated on RGB_MATRIX_* flags; led_matrix is not supported.
+#ifdef RGB_MATRIX_DRIVER_LOAD_ENABLE
+float snled27351_get_load_ratio(void) {
+    uint32_t total = 0;
+    for (uint8_t i = 0; i < SNLED27351_DRIVER_COUNT; i++) {
+        for (uint8_t j = 0; j < SNLED27351_PWM_REGISTER_COUNT; j++) {
+            total += driver_buffers[i].pwm_buffer[j];
+        }
+    }
+    return (float)total / (0xFF * 3 * SNLED27351_LED_COUNT);
+}
+#endif
+
 void snled27351_update_pwm_buffers(uint8_t index) {
     if (driver_buffers[index].pwm_buffer_dirty) {
         snled27351_select_page(index, SNLED27351_COMMAND_PWM);
@@ -248,6 +261,21 @@ void snled27351_flush(void) {
         snled27351_update_pwm_buffers(i);
     }
 }
+
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+// Software shutdown only (as in Keychron's firmware). Gated on RGB_MATRIX_* flags; led_matrix is not supported.
+void snled27351_shutdown(void) {
+    for (uint8_t i = 0; i < SNLED27351_DRIVER_COUNT; i++) {
+        snled27351_sw_shutdown(i);
+    }
+}
+
+void snled27351_exit_shutdown(void) {
+    for (uint8_t i = 0; i < SNLED27351_DRIVER_COUNT; i++) {
+        snled27351_sw_return_normal(i);
+    }
+}
+#endif
 
 void snled27351_sw_return_normal(uint8_t index) {
     snled27351_select_page(index, SNLED27351_COMMAND_FUNCTION);

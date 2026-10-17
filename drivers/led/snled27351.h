@@ -143,6 +143,14 @@ void snled27351_update_led_control_registers(uint8_t index);
 
 void snled27351_flush(void);
 
+#ifdef RGB_MATRIX_DRIVER_LOAD_ENABLE
+float snled27351_get_load_ratio(void);
+#endif
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+void snled27351_shutdown(void);
+void snled27351_exit_shutdown(void);
+#endif
+
 void snled27351_sw_return_normal(uint8_t index);
 void snled27351_sw_shutdown(uint8_t index);
 

@@ -1,0 +1,92 @@
+{
+    "keyboard_name": "Keychron Q1 Pro",
+    "manufacturer": "Keychron",
+    "url": "https://github.com/Keychron",
+    "maintainer": "lokher",
+    "processor": "STM32L432",
+    "bootloader": "stm32-dfu",
+    "usb": {
+        "vid": "0x3434"
+    },
+    "features": {
+        "bootmagic": true,
+        "mousekey": true,
+        "extrakey": true,
+        "nkro": true,
+        "dip_switch": true,
+        "raw": true,
+        "encoder": true,
+        "encoder_map": true,
+        "rgb_matrix": true
+    },
+    "diode_direction": "ROW2COL",
+    "matrix_size": {
+        "rows": 6,
+        "cols": 16
+    },
+    "matrix_pins": {
+        "rows": ["B5", "B4", "B3", "A15", "A14", "A13"],
+        "cols": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+        "custom": true,
+        "custom_lite": true
+    },
+    "encoder": {
+        "rotary": [
+            {"pin_a": "A10", "pin_b": "A0", "resolution": 4}
+        ]
+    },
+    "rgb_matrix": {
+        "driver": "snled27351",
+        "animations": {
+			"solid_color": true,
+			"gradient_up_down": false,
+			"gradient_left_right": false,
+            "breathing": false,
+			"band_sat": false,
+			"band_val":	false,
+			"band_pinwheel_sat": false,
+			"band_pinwheel_val": false,
+			"band_spiral_sat": false,
+            "band_spiral_val": false,
+            "cycle_all": false,
+            "cycle_left_right": true,
+            "cycle_up_down": false,
+            "rainbow_moving_chevron": false,
+			"cycle_out_in": false,
+			"cycle_out_in_dual": false,
+            "cycle_pinwheel": false,
+            "cycle_spiral": false,
+            "dual_beacon": false,
+            "rainbow_beacon": false,
+			"rainbow_pinwheels": false,
+			"flower_blooming": false,
+			"raindrops": false,
+            "jellybean_raindrops": false,
+			"hue_breathing": false,
+			"hue_pendulum": false,
+			"hue_wave": false,
+			"pixel_fractal": false,
+			"pixel_flow": false,
+			"pixel_rain": false,
+            "starlight": false,
+            "starlight_smooth": false,
+            "starlight_dual_hue": false,
+            "starlight_dual_sat": false,
+            "riverflow": false,
+            "typing_heatmap": false,
+            "digital_rain": false,
+			"solid_reactive_simple": true,
+			"solid_reactive": true,
+			"solid_reactive_wide": true,
+			"solid_reactive_multiwide": true,
+			"solid_reactive_cross": true,
+			"solid_reactive_multicross": true,
+			"solid_reactive_nexus": true,
+			"solid_reactive_multinexus": true,
+			"splash": false,
+			"multisplash": false,
+			"solid_splash": false,
+			"solid_multisplash": false
+        }
+    }
+}

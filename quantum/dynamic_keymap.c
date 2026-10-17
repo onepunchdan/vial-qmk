@@ -113,6 +113,8 @@ int dynamic_keymap_set_alt_repeat_key(uint8_t index, const vial_alt_repeat_key_e
 }
 #endif
 
+__attribute__((weak)) void dynamic_keymap_reset_user(void) {}
+
 void dynamic_keymap_reset(void) {
 #ifdef VIAL_ENABLE
     /* temporarily unlock the keyboard so we can set hardcoded QK_BOOT keycode */
@@ -176,6 +178,8 @@ void dynamic_keymap_reset(void) {
             dynamic_keymap_set_alt_repeat_key(i, &arep);
     }
 #endif
+
+    dynamic_keymap_reset_user();
 
 #ifdef VIAL_ENABLE
     /* re-lock the keyboard */

@@ -58,6 +58,7 @@ int dynamic_keymap_get_alt_repeat_key(uint8_t index, vial_alt_repeat_key_entry_t
 int dynamic_keymap_set_alt_repeat_key(uint8_t index, const vial_alt_repeat_key_entry_t *entry);
 #endif
 void     dynamic_keymap_reset(void);
+void     dynamic_keymap_reset_user(void);
 // These get/set the keycodes as stored in the EEPROM buffer
 // Data is big-endian 16-bit values (the keycodes)
 // Order is by layer/row/column

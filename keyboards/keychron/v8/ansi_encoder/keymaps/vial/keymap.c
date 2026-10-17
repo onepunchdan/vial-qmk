@@ -16,6 +16,10 @@
 
 #include QMK_KEYBOARD_H
 #include "keychron_common.h"
+#include "vil_defaults.h"
+#ifdef QMK_SETTINGS
+#    include "qmk_settings.h"
+#endif
 
 socd_cleaner_t socd_opposing_pairs[] = {
   {{KC_W, KC_S}, SOCD_CLEANER_LAST},
@@ -24,6 +28,7 @@ socd_cleaner_t socd_opposing_pairs[] = {
 
 // clang-format off
 
+// Layer names for reference only; the keymap comes from vil_defaults.h.
 enum layers{
     MAC_BASE,
     WIN_BASE,
@@ -32,52 +37,38 @@ enum layers{
     _FN3
 };
 
-const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [MAC_BASE] = LAYOUT_ansi_69(
-        KC_ESC,  KC_1,     KC_2,     KC_3,    KC_4,    KC_5,    KC_6,     KC_7,     KC_8,    KC_9,    KC_0,     KC_MINS,  KC_EQL,   KC_BSPC,             KC_MUTE,
-        KC_TAB,  KC_Q,     KC_W,     KC_E,    KC_R,    KC_T,    KC_Y,     KC_U,     KC_I,    KC_O,    KC_P,     KC_LBRC,  KC_RBRC,  KC_BSLS,             KC_DEL,
-        KC_CAPS, KC_A,     KC_S,     KC_D,    KC_F,    KC_G,              KC_H,     KC_J,    KC_K,    KC_L,     KC_SCLN,  KC_QUOT,  KC_ENT,              KC_HOME,
-        KC_LSFT,           KC_Z,     KC_X,    KC_C,    KC_V,    KC_B,     KC_B,     KC_N,    KC_M,    KC_COMM,  KC_DOT,   KC_SLSH,  KC_RSFT, KC_UP,
-        KC_LCTL, KC_LOPTN, KC_LCMMD,          KC_SPC,           MO(_FN1), MO(_FN3),          KC_SPC,            KC_RCMMD,           KC_LEFT, KC_DOWN,    KC_RGHT),
-
-    [WIN_BASE] = LAYOUT_ansi_69(
-        KC_ESC,  KC_1,     KC_2,     KC_3,    KC_4,    KC_5,    KC_6,     KC_7,     KC_8,    KC_9,    KC_0,     KC_MINS,  KC_EQL,   KC_BSPC,             KC_MUTE,
-        KC_TAB,  KC_Q,     KC_W,     KC_E,    KC_R,    KC_T,    KC_Y,     KC_U,     KC_I,    KC_O,    KC_P,     KC_LBRC,  KC_RBRC,  KC_BSLS,             KC_DEL,
-        KC_CAPS, KC_A,     KC_S,     KC_D,    KC_F,    KC_G,              KC_H,     KC_J,    KC_K,    KC_L,     KC_SCLN,  KC_QUOT,  KC_ENT,              KC_HOME,
-        KC_LSFT,           KC_Z,     KC_X,    KC_C,    KC_V,    KC_B,     KC_B,     KC_N,    KC_M,    KC_COMM,  KC_DOT,   KC_SLSH,  KC_RSFT, KC_UP,
-        KC_LCTL, KC_LWIN,  KC_LALT,           KC_SPC,           MO(_FN2), MO(_FN3),          KC_SPC,            KC_RALT,            KC_LEFT, KC_DOWN,    KC_RGHT),
-
-    [_FN1] = LAYOUT_ansi_69(
-        KC_GRV,  KC_BRID,  KC_BRIU,  KC_MCTL, KC_LPAD, RGB_VAD, RGB_VAI,  KC_MPRV,  KC_MPLY, KC_MNXT, KC_MUTE,  KC_VOLD,  KC_VOLU,  _______,             RGB_TOG,
-        RGB_TOG, RGB_MOD,  RGB_VAI,  RGB_HUI, RGB_SAI, RGB_SPI, _______,  _______,  _______, _______, _______,  _______,  _______,  _______,             _______,
-        _______, RGB_RMOD, RGB_VAD,  RGB_HUD, RGB_SAD, RGB_SPD,           _______,  _______, _______, _______,  _______,  _______,  _______,             _______,
-        _______,           _______,  _______, _______, _______, _______,  _______,  NK_TOGG, _______, _______,  _______,  _______,  _______, _______,
-        _______, _______,  _______,           _______,          _______,  _______,           _______,           _______,            _______, _______,    _______),
-
-    [_FN2] = LAYOUT_ansi_69(
-        KC_GRV,  KC_BRID,  KC_BRIU,  KC_TASK, KC_FLXP, RGB_VAD, RGB_VAI,  KC_MPRV,  KC_MPLY, KC_MNXT, KC_MUTE,  KC_VOLD,  KC_VOLU,  _______,             RGB_TOG,
-        RGB_TOG, RGB_MOD,  RGB_VAI,  RGB_HUI, RGB_SAI, RGB_SPI, _______,  _______,  _______, _______, _______,  _______,  _______,  _______,             _______,
-        _______, RGB_RMOD, RGB_VAD,  RGB_HUD, RGB_SAD, RGB_SPD,           _______,  _______, _______, _______,  _______,  _______,  _______,             _______,
-        _______,           _______,  _______, _______, _______, _______,  _______,  NK_TOGG, _______, _______,  _______,  _______,  _______, _______,
-        _______, _______,  _______,           _______,          _______,  _______,           _______,           _______,            _______, _______,    _______),
-
-    [_FN3] = LAYOUT_ansi_69(
-        KC_TILD, KC_F1,    KC_F2,    KC_F3,   KC_F4,   KC_F5,   KC_F6,    KC_F7,    KC_F8,   KC_F9,   KC_F10,   KC_F11,   KC_F12,   _______,             _______,
-        RGB_TOG, RGB_MOD,  RGB_VAI,  RGB_HUI, RGB_SAI, RGB_SPI, _______,  _______,  _______, _______, _______,  _______,  _______,  _______,             _______,
-        _______, RGB_RMOD, RGB_VAD,  RGB_HUD, RGB_SAD, RGB_SPD,           _______,  _______, _______, _______,  _______,  _______,  _______,             _______,
-        _______,           _______,  _______, _______, _______, _______,  _______,  _______, _______, _______,  _______,  _______,  _______, _______,
-        _______, _______,  _______,           _______,          _______,  _______,           _______,           _______,            _______, _______,    _______)
-};
+const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = VIL_KEYMAPS;
 
 #if defined(ENCODER_MAP_ENABLE)
-const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
-    [MAC_BASE] = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU)},
-    [WIN_BASE] = {ENCODER_CCW_CW(KC_VOLD, KC_VOLU)},
-    [_FN1]   = {ENCODER_CCW_CW(RGB_VAD, RGB_VAI)},
-    [_FN2]   = {ENCODER_CCW_CW(RGB_VAD, RGB_VAI)},
-    [_FN3]   = {ENCODER_CCW_CW(_______, _______)}
-};
+const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = VIL_ENCODER_MAP;
 #endif // ENCODER_MAP_ENABLE
+
+// Runs at the end of dynamic_keymap_reset() (also on reflash); vial_init() reloads the seeded combos/TDs into RAM.
+void dynamic_keymap_reset_user(void) {
+#ifdef VIAL_TAP_DANCE_ENABLE
+    static const vial_tap_dance_entry_t td[] = VIL_TAP_DANCE;
+    for (uint8_t i = 0; i < VIL_TAP_DANCE_COUNT && i < VIAL_TAP_DANCE_ENTRIES; ++i) {
+        dynamic_keymap_set_tap_dance(i, &td[i]);
+    }
+#endif
+#ifdef VIAL_COMBO_ENABLE
+    static const vial_combo_entry_t combos[] = VIL_COMBOS;
+    for (uint8_t i = 0; i < VIL_COMBO_COUNT && i < VIAL_COMBO_ENTRIES; ++i) {
+        dynamic_keymap_set_combo(i, &combos[i]);
+    }
+#endif
+#ifdef QMK_SETTINGS
+    // dynamic_keymap_reset() just reset QMK Settings to defaults; seed the .vil values (a 4-byte buffer fits every setting width).
+    static const uint16_t qs[][2] = VIL_QMK_SETTINGS;
+    for (uint8_t i = 0; i < VIL_QMK_SETTINGS_COUNT; ++i) {
+        uint32_t v = qs[i][1];
+        qmk_settings_set(qs[i][0], &v, sizeof(v));
+    }
+#endif
+#ifdef VIAL_ENABLE
+    vial_init();
+#endif
+}
 
 // clang-format on
 
