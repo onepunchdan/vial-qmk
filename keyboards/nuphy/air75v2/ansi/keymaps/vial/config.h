@@ -21,9 +21,9 @@
 // #define FLOW_TAP_TERM 150
 // #define CAPS_WORD_IDLE_TIMEOUT 3000
 
-#define PALETTEFX_ENABLE_ALL_EFFECTS
+#define PALETTEFX_REACTIVE_ENABLE  // only palettefx effect kept
+#define RGB_MATRIX_KEYPRESSES      // needed by PaletteFx reactive now that no standard reactive effect is enabled
 #define PALETTEFX_ENABLE_ALL_PALETTES
-#define RGB_MATRIX_SOLID_REACTIVE_GRADIENT_MODE
 
 #define VIAL_TAP_DANCE_ENTRIES 16
 #define VIAL_COMBO_ENTRIES 8  // Air75 only: frees RAM on the 16 KB F072

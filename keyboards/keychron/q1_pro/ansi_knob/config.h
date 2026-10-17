@@ -46,7 +46,6 @@
  * https://docs.qmk.fm/#/feature_rgb_matrix?id=rgb-matrix-effects
  */
 #    define RGB_MATRIX_KEYPRESSES
-#    define RGB_MATRIX_FRAMEBUFFER_EFFECTS
 
 /* Set LED driver current */
 #    define SNLED27351_CURRENT_TUNE \

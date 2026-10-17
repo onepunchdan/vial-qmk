@@ -73,7 +73,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #define WAIT_US_TIMER GPTD14
 
-#define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_CYCLE_LEFT_RIGHT
+#define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_SOLID_COLOR
 #define RGB_DEFAULT_COLOR 168
 
 #define NUPHY_BLE_NAME "NuPhy Air75 V2"
