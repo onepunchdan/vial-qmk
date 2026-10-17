@@ -8,6 +8,16 @@ concurrency:
 env:
   REGEX_ANSI_COLOR: 's/\x1b\[[0-9;]*[mGKHF]//g'
   REGEX_MAKE_OUTPUT: '/^g*make\[1]: \(Enter\|Leav\)ing directory ''/d'
+  # Only the boards this fork maintains; keep in sync with compkeebs.sh.
+  BOARDS: >-
+    royal_kludge/rk61
+    keychron/v4/ansi
+    keychron/v3/ansi_encoder
+    keychron/v8/ansi_encoder
+    keychron/q3/ansi_encoder
+    keychron/q8/ansi_encoder
+    nuphy/air75v2/ansi
+    keychron/q1_pro/ansi_knob
 
 permissions: {}
 
@@ -43,7 +53,7 @@ jobs:
       id: build
       run: |
         git config --global --add safe.directory $(pwd)
-        if ! qmk mass-compile -j $(nproc) $(qmk find -km vial | sed "s/:vial$/:${KEYMAP}/");
+        if ! qmk mass-compile -j $(nproc) $(for kb in ${BOARDS}; do echo "${kb}:${KEYMAP}"; done);
           then
           echo "::error::$(ls -1 .build/failed.log.* | wc -l) keymaps failed to build. See logs and/or job summary for details."
           exit 1
@@ -81,7 +91,7 @@ jobs:
       id: build
       run: |
         git config --global --add safe.directory $(pwd)
-        if ! qmk mass-compile -km "${KEYMAP}" -j $(nproc);
+        if ! qmk mass-compile -j $(nproc) $(for kb in ${BOARDS}; do echo "${kb}:${KEYMAP}"; done);
           then
           echo "::error::$(ls -1 .build/failed.log.* | wc -l) keymaps failed to build. See logs and/or job summary for details."
           exit 1
