@@ -33,8 +33,7 @@ static bool                cooked_changed;
 static void update_debounce_counters_and_transfer_if_expired(matrix_row_t raw[], matrix_row_t cooked[], uint8_t elapsed_time);
 static void transfer_matrix_values(matrix_row_t raw[], matrix_row_t cooked[]);
 
-void debounce_init(uint8_t num_rows) {
-    (void)num_rows; // vial-qmk signature; matrix_rows() is used instead
+void debounce_init(void) {
     const uint8_t rows = matrix_rows();
     const uint8_t cols = matrix_cols();
 
@@ -47,13 +46,7 @@ void debounce_init(uint8_t num_rows) {
     }
 }
 
-void debounce_free(void) {
-    free(debounce_counters);
-    debounce_counters = NULL;
-}
-
-bool debounce(matrix_row_t raw[], matrix_row_t cooked[], uint8_t num_rows, bool changed) {
-    (void)num_rows; // vial-qmk signature; matrix_rows() is used instead
+bool debounce(matrix_row_t raw[], matrix_row_t cooked[], bool changed) {
     bool updated_last = false;
     cooked_changed    = false;
 

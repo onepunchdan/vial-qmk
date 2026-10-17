@@ -576,7 +576,7 @@ static void reload_combo(void) {
 #endif
 
 #ifdef VIAL_TAP_DANCE_ENABLE
-void process_tap_dance_action_on_dance_finished(tap_dance_action_t *action);
+void process_tap_dance_action_on_dance_finished(tap_dance_action_t *action, tap_dance_state_t *state);
 #endif
 
 bool process_record_vial(uint16_t keycode, keyrecord_t *record) {
@@ -588,16 +588,19 @@ bool process_record_vial(uint16_t keycode, keyrecord_t *record) {
             return true;
 
         tap_dance_action_t *action = &tap_dance_actions[idx];
+        tap_dance_state_t  *state  = tap_dance_get_state(idx);
+        if (state == NULL)
+            return true;
 
         /* only care about 2 possibilities here
            - tap and hold set, everything else unset: process first release early (count == 1)
            - double tap set: process second release early (count == 2)
          */
-        if ((action->state.count == 1 && td_entry.on_tap && td_entry.on_hold && !td_entry.on_double_tap && !td_entry.on_tap_hold)
-            || (action->state.count == 2 && td_entry.on_double_tap)) {
-                action->state.pressed = false;
-                process_tap_dance_action_on_dance_finished(action);
-                /* reset_tap_dance() will get called in process_tap_dance() */
+        if ((state->count == 1 && td_entry.on_tap && td_entry.on_hold && !td_entry.on_double_tap && !td_entry.on_tap_hold)
+            || (state->count == 2 && td_entry.on_double_tap)) {
+                state->pressed = false;
+                process_tap_dance_action_on_dance_finished(action, state);
+                /* the shared state is freed inside process_tap_dance_action_on_dance_finished(), so process_tap_dance() returns false on this release */
             }
     }
 #endif

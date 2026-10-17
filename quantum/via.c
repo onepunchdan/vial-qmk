@@ -48,17 +48,31 @@
 
 #include "quantum.h"
 
+#ifdef VIA_INSECURE
+#    pragma message "VIA_INSECURE is enabled - firmware is susceptible to keyloggers"
+#endif
+
 #include "via.h"
 
 #include "raw_hid.h"
 #include "dynamic_keymap.h"
-#include "eeprom.h"
+#include "eeconfig.h"
+#include "matrix.h"
+#include "timer.h"
+#include "wait.h"
 #include "version.h" // for QMK_BUILDDATE used in EEPROM magic
-#include "quantum/nvm/eeprom/nvm_eeprom_eeconfig_internal.h"
-#include "quantum/nvm/eeprom/nvm_eeprom_via_internal.h"
+#include "nvm_via.h"
 
 #ifdef VIAL_ENABLE
 #include "vial.h"
+#endif
+
+#if defined(SECURE_ENABLE)
+#    include "secure.h"
+#endif
+
+#if defined(AUDIO_ENABLE)
+#    include "audio.h"
 #endif
 
 #ifdef VIALRGB_ENABLE
@@ -89,32 +103,38 @@ bool via_eeprom_is_valid(void) {
     uint8_t magic1 = (BUILD_ID >> 8) & 0xFF;
     uint8_t magic2 = (BUILD_ID >> 16) & 0xFF;
 #else
-    char *  p      = QMK_BUILDDATE; // e.g. "2019-11-05-11:29:54"
+    char   *p      = QMK_BUILDDATE; // e.g. "2019-11-05-11:29:54"
     uint8_t magic0 = ((p[2] & 0x0F) << 4) | (p[3] & 0x0F);
     uint8_t magic1 = ((p[5] & 0x0F) << 4) | (p[6] & 0x0F);
     uint8_t magic2 = ((p[8] & 0x0F) << 4) | (p[9] & 0x0F);
 #endif
 
-    return (eeprom_read_byte((void *)VIA_EEPROM_MAGIC_ADDR + 0) == magic0 && eeprom_read_byte((void *)VIA_EEPROM_MAGIC_ADDR + 1) == magic1 && eeprom_read_byte((void *)VIA_EEPROM_MAGIC_ADDR + 2) == magic2);
+    uint8_t ee_magic0;
+    uint8_t ee_magic1;
+    uint8_t ee_magic2;
+    nvm_via_read_magic(&ee_magic0, &ee_magic1, &ee_magic2);
+
+    return ee_magic0 == magic0 && ee_magic1 == magic1 && ee_magic2 == magic2;
 }
 
 // Sets VIA/keyboard level usage of EEPROM to valid/invalid
 // Keyboard level code (eg. via_init_kb()) should not call this
 void via_eeprom_set_valid(bool valid) {
+    if (valid) {
 #ifdef VIAL_ENABLE
-    uint8_t magic0 = BUILD_ID & 0xFF;
-    uint8_t magic1 = (BUILD_ID >> 8) & 0xFF;
-    uint8_t magic2 = (BUILD_ID >> 16) & 0xFF;
+        uint8_t magic0 = BUILD_ID & 0xFF;
+        uint8_t magic1 = (BUILD_ID >> 8) & 0xFF;
+        uint8_t magic2 = (BUILD_ID >> 16) & 0xFF;
 #else
-    char *  p      = QMK_BUILDDATE; // e.g. "2019-11-05-11:29:54"
-    uint8_t magic0 = ((p[2] & 0x0F) << 4) | (p[3] & 0x0F);
-    uint8_t magic1 = ((p[5] & 0x0F) << 4) | (p[6] & 0x0F);
-    uint8_t magic2 = ((p[8] & 0x0F) << 4) | (p[9] & 0x0F);
+        char   *p      = QMK_BUILDDATE; // e.g. "2019-11-05-11:29:54"
+        uint8_t magic0 = ((p[2] & 0x0F) << 4) | (p[3] & 0x0F);
+        uint8_t magic1 = ((p[5] & 0x0F) << 4) | (p[6] & 0x0F);
+        uint8_t magic2 = ((p[8] & 0x0F) << 4) | (p[9] & 0x0F);
 #endif
-
-    eeprom_update_byte((void *)VIA_EEPROM_MAGIC_ADDR + 0, valid ? magic0 : 0xFF);
-    eeprom_update_byte((void *)VIA_EEPROM_MAGIC_ADDR + 1, valid ? magic1 : 0xFF);
-    eeprom_update_byte((void *)VIA_EEPROM_MAGIC_ADDR + 2, valid ? magic2 : 0xFF);
+        nvm_via_update_magic(magic0, magic1, magic2);
+    } else {
+        nvm_via_update_magic(0xFF, 0xFF, 0xFF);
+    }
 }
 
 // Override this at the keyboard code level to check
@@ -140,6 +160,8 @@ void via_init(void) {
 }
 
 void eeconfig_init_via(void) {
+    // Erase any NVM storage if necessary
+    nvm_via_erase();
     // set the magic number to false, in case this gets interrupted
     via_eeprom_set_valid(false);
     // This resets the layout options
@@ -155,29 +177,24 @@ void eeconfig_init_via(void) {
 // This is generalized so the layout options EEPROM usage can be
 // variable, between 1 and 4 bytes.
 uint32_t via_get_layout_options(void) {
-    uint32_t value = 0;
-    // Start at the most significant byte
-    void *source = (void *)(VIA_EEPROM_LAYOUT_OPTIONS_ADDR);
-    for (uint8_t i = 0; i < VIA_EEPROM_LAYOUT_OPTIONS_SIZE; i++) {
-        value = value << 8;
-        value |= eeprom_read_byte(source);
-        source++;
-    }
-    return value;
+    return nvm_via_read_layout_options();
 }
 
 __attribute__((weak)) void via_set_layout_options_kb(uint32_t value) {}
 
 void via_set_layout_options(uint32_t value) {
     via_set_layout_options_kb(value);
-    // Start at the least significant byte
-    void *target = (void *)(VIA_EEPROM_LAYOUT_OPTIONS_ADDR + VIA_EEPROM_LAYOUT_OPTIONS_SIZE - 1);
-    for (uint8_t i = 0; i < VIA_EEPROM_LAYOUT_OPTIONS_SIZE; i++) {
-        eeprom_update_byte(target, value & 0xFF);
-        value = value >> 8;
-        target--;
-    }
+    nvm_via_update_layout_options(value);
 }
+
+#if VIA_EEPROM_CUSTOM_CONFIG_SIZE > 0
+uint32_t via_read_custom_config(void *buf, uint32_t offset, uint32_t length) {
+    return nvm_via_read_custom_config(buf, offset, length);
+}
+uint32_t via_update_custom_config(const void *buf, uint32_t offset, uint32_t length) {
+    return nvm_via_update_custom_config(buf, offset, length);
+}
+#endif
 
 // Called by QMK core to process VIA-specific keycodes.
 bool process_record_via(uint16_t keycode, keyrecord_t *record) {
@@ -270,6 +287,14 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
                         command_data[i++] = value & 0xFF;
                     }
 #endif
+                    break;
+                }
+                case id_keycodes_version: {
+                    uint32_t value  = QMK_KEYCODES_VERSION_BCD;
+                    command_data[1] = (value >> 24) & 0xFF;
+                    command_data[2] = (value >> 16) & 0xFF;
+                    command_data[3] = (value >> 8) & 0xFF;
+                    command_data[4] = value & 0xFF;
                     break;
                 }
                 default: {

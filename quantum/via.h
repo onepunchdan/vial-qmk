@@ -39,6 +39,7 @@
 
 // This is changed only when the command IDs change,
 // so VIA Configurator can detect compatible firmware.
+// Vial: stays at 0x0009; the fork keeps VIA protocol 9 command semantics (e.g. id_switch_matrix_state without offset)
 #define VIA_PROTOCOL_VERSION 0x0009
 
 // This is a version number for the firmware for the keyboard.
@@ -84,6 +85,7 @@ enum via_keyboard_value_id {
     id_switch_matrix_state = 0x03,
     id_firmware_version    = 0x04,
     id_device_indication   = 0x05,
+    id_keycodes_version    = 0x06,
 };
 
 enum via_channel_id {

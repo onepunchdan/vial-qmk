@@ -425,7 +425,7 @@ void indicator_battery_low(void) {
 #if defined(BAT_LOW_LED_PIN) || defined(BAT_LOW_LED_PIN_STATE)
     if (bat_low_pin_indicator && sync_timer_elapsed32(bat_low_pin_indicator) > (LOW_BAT_LED_BLINK_PERIOD)) {
 #    if defined(BAT_LOW_LED_PIN)
-        togglePin(BAT_LOW_LED_PIN);
+        gpio_toggle_pin(BAT_LOW_LED_PIN);
 #    else
         bat_low_led_pin_state = !bat_low_led_pin_state;
 #    endif

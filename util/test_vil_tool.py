@@ -25,6 +25,12 @@ class TestVilTool(unittest.TestCase):
                          ("KC_RSHIFT", "KC_RSFT"), ("KC_APPLICATION", "KC_APP")]:
             self.assertEqual(vt.convert_keycode(old, {}), new)
 
+    def test_mouse_names(self):
+        for old, new in [("KC_MS_U", "MS_UP"), ("KC_MS_D", "MS_DOWN"), ("KC_MS_L", "MS_LEFT"), ("KC_MS_R", "MS_RGHT"),
+                         ("KC_BTN1", "MS_BTN1"), ("KC_BTN8", "MS_BTN8"), ("KC_WH_U", "MS_WHLU"), ("KC_WH_D", "MS_WHLD"),
+                         ("KC_WH_L", "MS_WHLL"), ("KC_WH_R", "MS_WHLR"), ("KC_ACL0", "MS_ACL0"), ("KC_ACL2", "MS_ACL2")]:
+            self.assertEqual(vt.convert_keycode(old, {}), new)
+
     def test_hex_and_passthrough(self):
         self.assertEqual(vt.convert_keycode("0x7e05", {}), "0x7e05")
         self.assertEqual(vt.convert_keycode("TD(2)", {}), "TD(2)")

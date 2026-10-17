@@ -11,9 +11,6 @@
 
 #define USB_VBUS_PIN A7
 
-/* Turn off RGB after 5 minutes of inactivity (handles USB power-on-when-off mobos) */
-#define RGB_MATRIX_TIMEOUT 300000
-
 /* Defines for the RGB matrix */
 #define WS2812_PWM_DRIVER PWMD3
 #define WS2812_PWM_CHANNEL 3

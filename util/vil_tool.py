@@ -15,6 +15,11 @@ _EXPLICIT = {
     "KC_LCTRL": "KC_LCTL", "KC_RCTRL": "KC_RCTL",
     "KC_PSCREEN": "KC_PSCR", "KC_SCROLLLOCK": "KC_SCRL",
     "KC_APPLICATION": "KC_APP",
+    # QMK 0.34 removed the KC_MS_*/KC_BTN*/KC_WH_*/KC_ACL* mouse names.
+    "KC_MS_U": "MS_UP", "KC_MS_D": "MS_DOWN", "KC_MS_L": "MS_LEFT", "KC_MS_R": "MS_RGHT",
+    "KC_WH_U": "MS_WHLU", "KC_WH_D": "MS_WHLD", "KC_WH_L": "MS_WHLL", "KC_WH_R": "MS_WHLR",
+    **{"KC_BTN%d" % i: "MS_BTN%d" % i for i in range(1, 9)},
+    **{"KC_ACL%d" % i: "MS_ACL%d" % i for i in range(3)},
 }
 
 

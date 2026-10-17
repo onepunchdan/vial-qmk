@@ -167,7 +167,7 @@ void nvm_dynamic_keymap_update_encoder(uint8_t layer, uint8_t encoder_id, bool c
 
 void nvm_dynamic_keymap_read_buffer(uint32_t offset, uint32_t size, uint8_t *data) {
     uint32_t dynamic_keymap_eeprom_size = DYNAMIC_KEYMAP_LAYER_COUNT * MATRIX_ROWS * MATRIX_COLS * 2;
-    void *   source                     = (void *)(uintptr_t)(DYNAMIC_KEYMAP_EEPROM_ADDR + offset);
+    void    *source                     = (void *)(uintptr_t)(DYNAMIC_KEYMAP_EEPROM_ADDR + offset);
     uint8_t *target                     = data;
     for (uint32_t i = 0; i < size; i++) {
         if (offset + i < dynamic_keymap_eeprom_size) {
@@ -181,8 +181,8 @@ void nvm_dynamic_keymap_read_buffer(uint32_t offset, uint32_t size, uint8_t *dat
 }
 
 void nvm_dynamic_keymap_update_buffer(uint32_t offset, uint32_t size, uint8_t *data) {
-    uint16_t dynamic_keymap_eeprom_size = DYNAMIC_KEYMAP_LAYER_COUNT * MATRIX_ROWS * MATRIX_COLS * 2;
-    void *   target                     = (void *)((uintptr_t)(DYNAMIC_KEYMAP_EEPROM_ADDR + offset));
+    uint32_t dynamic_keymap_eeprom_size = DYNAMIC_KEYMAP_LAYER_COUNT * MATRIX_ROWS * MATRIX_COLS * 2;
+    void    *target                     = (void *)(uintptr_t)(DYNAMIC_KEYMAP_EEPROM_ADDR + offset);
     uint8_t *source                     = data;
 
 #ifdef VIAL_ENABLE
@@ -194,8 +194,8 @@ void nvm_dynamic_keymap_update_buffer(uint32_t offset, uint32_t size, uint8_t *d
     /* Check whether it is trying to send a QK_BOOT keycode; only allow setting these if unlocked */
     if (!vial_unlocked) {
         /* how much of the input array we'll have to check in the loop */
-        uint16_t chk_offset = 0;
-        uint16_t chk_sz = size;
+        uint32_t chk_offset = 0;
+        uint32_t chk_sz     = size;
 
         /* initial byte misaligned -- this means the first keycode will be a combination of existing and new data */
         if (offset % 2 != 0) {
@@ -218,7 +218,7 @@ void nvm_dynamic_keymap_update_buffer(uint32_t offset, uint32_t size, uint8_t *d
         }
 
         /* check the entire array, replace any instances of QK_BOOT with invalid keycode 0xFFFF */
-        for (uint16_t i = chk_offset; i < chk_sz; i += 2) {
+        for (uint32_t i = chk_offset; i < chk_sz; i += 2) {
             uint16_t kc = (data[i] << 8) | data[i + 1];
             if (kc == QK_BOOT) {
                 data[i] = 0xFF;
@@ -229,7 +229,7 @@ void nvm_dynamic_keymap_update_buffer(uint32_t offset, uint32_t size, uint8_t *d
 #endif
 #endif
 
-    for (uint16_t i = 0; i < size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         if (offset + i < dynamic_keymap_eeprom_size) {
             eeprom_update_byte(target, *source);
         }
@@ -243,7 +243,7 @@ uint32_t nvm_dynamic_keymap_macro_size(void) {
 }
 
 void nvm_dynamic_keymap_macro_read_buffer(uint32_t offset, uint32_t size, uint8_t *data) {
-    void *   source = (void *)(uintptr_t)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + offset);
+    void    *source = (void *)(uintptr_t)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + offset);
     uint8_t *target = data;
     for (uint16_t i = 0; i < size; i++) {
         if (offset + i < DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE) {
@@ -257,7 +257,7 @@ void nvm_dynamic_keymap_macro_read_buffer(uint32_t offset, uint32_t size, uint8_
 }
 
 void nvm_dynamic_keymap_macro_update_buffer(uint32_t offset, uint32_t size, uint8_t *data) {
-    void *   target = (void *)(uintptr_t)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + offset);
+    void    *target = (void *)(uintptr_t)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + offset);
     uint8_t *source = data;
     for (uint16_t i = 0; i < size; i++) {
         if (offset + i < DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE) {
@@ -269,8 +269,8 @@ void nvm_dynamic_keymap_macro_update_buffer(uint32_t offset, uint32_t size, uint
 }
 
 void nvm_dynamic_keymap_macro_reset(void) {
-    void *  start     = (void *)(uintptr_t)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR);
-    void *  end       = (void *)(uintptr_t)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE);
+    void   *start     = (void *)(uintptr_t)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR);
+    void   *end       = (void *)(uintptr_t)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE);
     long    remaining = end - start;
     uint8_t dummy[16] = {0};
     for (int i = 0; i < DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE; i += sizeof(dummy)) {
